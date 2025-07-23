@@ -27,6 +27,12 @@ public class PlayerStateMachine : MonoBehaviour
     public float crouchHeight = 1.2f;
     public float heightLerpSpeed = 12f;
 
+    //References
+    private CapsuleCollider capsuleCollider;
+    private Transform viewRoot;
+    private float targetHeight;
+    private float viewRootStartLocalY;
+
 
     // Latest movement input pushed in from player_movement (Vector2 WASD)
     public Vector2 MoveInput { get; private set; } = Vector2.zero;
@@ -44,7 +50,6 @@ public class PlayerStateMachine : MonoBehaviour
     public PlayerWalkState WalkState { get; private set; }
 
     private PlayerState currentState;
-    private CapsuleCollider capsuleCollider; // optional if using capsule
 
     void Awake()
     {
@@ -52,6 +57,9 @@ public class PlayerStateMachine : MonoBehaviour
         WalkState = new PlayerWalkState(this);
         SprintState = new PlayerSprintState(this);
         CrouchState = new PlayerCrouchState(this);
+
+        capsuleCollider = GetComponent<CapsuleCollider>();
+        viewRoot = FindViewRoot();
     }
 
     void Start() => Init(IdleState);
@@ -112,7 +120,17 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    //Helper Methods
+    private Transform FindViewRoot()
+    {
+        Transform t = this.transform.Find("fpv_camera");
+        if (t != null) return t;
 
+        Camera camera = GetComponentInChildren<Camera>();
+        if (camera != null) return camera.transform;
+        return transform;
+
+    }
 
 
 }
