@@ -32,6 +32,7 @@ public class PlayerStateMachine : MonoBehaviour
     private Transform viewRoot;
     private float targetHeight;
     private float viewRootStartLocalY;
+    private float crouchEyeLocalY;
 
 
     // Latest movement input pushed in from player_movement (Vector2 WASD)
@@ -62,10 +63,22 @@ public class PlayerStateMachine : MonoBehaviour
         viewRoot = FindViewRoot();
     }
 
-    void Start() => Init(IdleState);
+    void Start()
+    {
+        Init(IdleState);
+        targetHeight = standingHeight;
+        viewRootStartLocalY = viewRoot.localPosition.y;
+        crouchEyeLocalY = viewRootStartLocalY * (crouchHeight / standingHeight);
+
+    }
+
     public void SetMoveInput(Vector2 input) => MoveInput = input;
     internal void SetMoveSpeedMultiplier(float value) => MoveSpeedMultiplier = value;
     void Update() => currentState.Update();
+    void LateUpdate()
+    {
+        UpdateCrouchVisuals(Time.deltaTime);
+    }
 
     //EVENT HANDLERS
     public void Init(PlayerState startingState)
@@ -120,6 +133,11 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    internal void SetCrouchTarget(bool crouch)
+    {
+        targetHeight = crouch ? crouchHeight : standingHeight;
+    }
+
     //Helper Methods
     private Transform FindViewRoot()
     {
@@ -129,6 +147,21 @@ public class PlayerStateMachine : MonoBehaviour
         Camera camera = GetComponentInChildren<Camera>();
         if (camera != null) return camera.transform;
         return transform;
+
+    }
+
+    private void UpdateCrouchVisuals(float deltaT)
+    {
+        //collider height
+        float height = Mathf.Lerp(capsuleCollider.height, targetHeight, deltaT * heightLerpSpeed);
+        capsuleCollider.height = height;
+        capsuleCollider.center = new Vector3(0f, height * 0.5f, 0f); // plants user
+
+        //camera root n vertical shift
+        float time = (height - crouchHeight) / (standingHeight - crouchHeight);
+        Vector3 pos = viewRoot.localPosition;
+        pos.y = Mathf.Lerp(crouchEyeLocalY, viewRootStartLocalY, time);
+        viewRoot.localPosition = pos;
 
     }
 
@@ -194,10 +227,12 @@ public class PlayerCrouchState : PlayerState
     public override void Enter()
     {
         stateMachine.SetMoveSpeedMultiplier(stateMachine.walkMultiplier * stateMachine.crouchMultiplier);
+        stateMachine.SetCrouchTarget(true);
         Debug.Log("Entered Crouch State");
     }
     public override void Exit()
     {
+        stateMachine.SetCrouchTarget(false);
         Debug.Log("Exited Crouch State");
     }
 }
