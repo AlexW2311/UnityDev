@@ -528,9 +528,22 @@ MonoBehaviour:
   walkMultiplier: 1
   sprintMultiplier: 1.7
   crouchMultiplier: 0.5
+--- !u!114 &1622483839
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1622483813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 754cc8624d67e42d2a08b8e1c1a61d69, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CrouchVisuals
   standingHeight: 2
   crouchHeight: 1.2
   heightLerpSpeed: 12
+  viewRoot: {fileID: 0}
 --- !u!1001 &261565926130096675
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -606,6 +619,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4790892661951766566, guid: b42eacb04c6a84c3b93b010c1f70ea32, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1622483833}
+    - targetCorrespondingSourceObject: {fileID: 4790892661951766566, guid: b42eacb04c6a84c3b93b010c1f70ea32, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1622483839}
   m_SourcePrefab: {fileID: 100100000, guid: b42eacb04c6a84c3b93b010c1f70ea32, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

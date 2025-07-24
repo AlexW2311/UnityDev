@@ -79,6 +79,7 @@ public class PlayerStateMachine : MonoBehaviour
         }
     }
 
+    public bool IsCrouched => currentState == CrouchState;
 
     public void OnCrouchPressed()
     {
