@@ -22,26 +22,11 @@ public class PlayerStateMachine : MonoBehaviour
     public float walkMultiplier = 1f;
     public float sprintMultiplier = 1.70f;
     public float crouchMultiplier = 0.5f;
-    [Header("Crouch Settings")]
-    public float standingHeight = 2f;
-    public float crouchHeight = 1.2f;
-    public float heightLerpSpeed = 12f;
 
-    //References
-    private CapsuleCollider capsuleCollider;
-    private Transform viewRoot;
-    private float targetHeight;
-    private float viewRootStartLocalY;
-    private float crouchEyeLocalY;
-
-
-    // Latest movement input pushed in from player_movement (Vector2 WASD)
-    public Vector2 MoveInput { get; private set; } = Vector2.zero;
-    public bool SprintHeld { get; private set; } = false;
-    public bool CrouchHeld { get; private set; } = false;
-
+    
 
     // Exposed to the  Movement script
+    public Vector2 MoveInput { get; private set; } = Vector2.zero;
     public float MoveSpeedMultiplier { get; private set; } = 0f;
 
     [Header("State Instances")]
@@ -59,26 +44,14 @@ public class PlayerStateMachine : MonoBehaviour
         SprintState = new PlayerSprintState(this);
         CrouchState = new PlayerCrouchState(this);
 
-        capsuleCollider = GetComponent<CapsuleCollider>();
-        viewRoot = FindViewRoot();
     }
 
-    void Start()
-    {
-        Init(IdleState);
-        targetHeight = standingHeight;
-        viewRootStartLocalY = viewRoot.localPosition.y;
-        crouchEyeLocalY = viewRootStartLocalY * (crouchHeight / standingHeight);
-
-    }
+    void Start() => Init(IdleState);
+    void Update() => currentState.Update();
 
     public void SetMoveInput(Vector2 input) => MoveInput = input;
     internal void SetMoveSpeedMultiplier(float value) => MoveSpeedMultiplier = value;
-    void Update() => currentState.Update();
-    void LateUpdate()
-    {
-        UpdateCrouchVisuals(Time.deltaTime);
-    }
+    
 
     //EVENT HANDLERS
     public void Init(PlayerState startingState)
@@ -93,78 +66,31 @@ public class PlayerStateMachine : MonoBehaviour
         currentState = newState;
         currentState.Enter();
     }
+    // Sprint
     public void OnSprintPressed()
     {
-        if (currentState != SprintState)
-        {
-            ChangeState(SprintState);
-            SprintHeld = true;
-        }
+        if (currentState == WalkState) ChangeState(SprintState);
     }
     public void OnSprintReleased()
     {
         if (currentState == SprintState)
         {
-            ChangeState(WalkState);
-            SprintHeld = false;
+            ChangeState(MoveInput.sqrMagnitude > 0.0001f ? WalkState : IdleState);
         }
     }
+
 
     public void OnCrouchPressed()
     {
-        if (currentState != CrouchState)
-        {
-            ChangeState(CrouchState);
-        }
+        if (currentState != CrouchState) ChangeState(CrouchState);
     }
-
     public void OnCrouchReleased()
     {
         if (currentState == CrouchState)
         {
-            if (MoveInput.sqrMagnitude > 0.0001f)
-            {
-                ChangeState(WalkState);
-            }
-            else
-            {
-                ChangeState(IdleState);
-            }
+            ChangeState(MoveInput.sqrMagnitude > 0.0001f ? WalkState : IdleState);
         }
     }
-
-    internal void SetCrouchTarget(bool crouch)
-    {
-        targetHeight = crouch ? crouchHeight : standingHeight;
-    }
-
-    //Helper Methods
-    private Transform FindViewRoot()
-    {
-        Transform t = this.transform.Find("fpv_camera");
-        if (t != null) return t;
-
-        Camera camera = GetComponentInChildren<Camera>();
-        if (camera != null) return camera.transform;
-        return transform;
-
-    }
-
-    private void UpdateCrouchVisuals(float deltaT)
-    {
-        //collider height
-        float height = Mathf.Lerp(capsuleCollider.height, targetHeight, deltaT * heightLerpSpeed);
-        capsuleCollider.height = height;
-        capsuleCollider.center = new Vector3(0f, height * 0.5f, 0f); // plants user
-
-        //camera root n vertical shift
-        float time = (height - crouchHeight) / (standingHeight - crouchHeight);
-        Vector3 pos = viewRoot.localPosition;
-        pos.y = Mathf.Lerp(crouchEyeLocalY, viewRootStartLocalY, time);
-        viewRoot.localPosition = pos;
-
-    }
-
 
 }
 
@@ -227,14 +153,9 @@ public class PlayerCrouchState : PlayerState
     public override void Enter()
     {
         stateMachine.SetMoveSpeedMultiplier(stateMachine.walkMultiplier * stateMachine.crouchMultiplier);
-        stateMachine.SetCrouchTarget(true);
         Debug.Log("Entered Crouch State");
     }
-    public override void Exit()
-    {
-        stateMachine.SetCrouchTarget(false);
-        Debug.Log("Exited Crouch State");
-    }
+
 }
 
 public class PlayerSprintState : PlayerState
@@ -247,8 +168,4 @@ public class PlayerSprintState : PlayerState
         Debug.Log("Entered Sprint State");
     }
 
-    public override void Exit()
-    {
-        Debug.Log("Exited Sprint State");
-    }
 }
