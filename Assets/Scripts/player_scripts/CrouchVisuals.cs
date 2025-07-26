@@ -7,6 +7,7 @@ public class CrouchVisuals : MonoBehaviour
     public float standingHeight = 2f;
     public float crouchHeight   = 1.0f;
     public float heightLerpSpeed = 12f;
+    public float crouchHeightCameraOffset = 0.5f;
 
     [Header("View Root (camera or parent)")]
     [SerializeField] private Transform viewRoot; // optional, auto-found if null
@@ -45,7 +46,7 @@ public class CrouchVisuals : MonoBehaviour
         targetHeight = standingHeight;
 
         startEyeY   = viewRoot.localPosition.y;
-        crouchEyeY  = startEyeY * (crouchHeight / standingHeight);
+        crouchEyeY  = startEyeY * (crouchHeight / standingHeight) - crouchHeightCameraOffset;
     }
 
     void LateUpdate()
