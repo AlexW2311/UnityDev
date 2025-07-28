@@ -1,0 +1,14 @@
+:root {
+}
+
+.cross {
+    width: 32px;
+    height: 32px;
+    background-image: resource('Assets/UI/crosshair.png');
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: ;
+    opacity: 1;
+    visibility: visible;
+}
