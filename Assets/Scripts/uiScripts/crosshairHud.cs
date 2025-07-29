@@ -9,7 +9,7 @@ public sealed class crosshairHud : MonoBehaviour
     void Awake()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
-        _cross = root.Q("cross");
+        _cross = root.Q<VisualElement>("crosshair");
 
     }
     void Start()
